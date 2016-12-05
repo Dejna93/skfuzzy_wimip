@@ -175,20 +175,24 @@ class StartPage(tk.Frame):
 
         entry_4 = tk.Entry(self.labelFrame_3, textvariable=self.ilgrzenst)
         entry_4.grid(row=1, column=1, sticky="se")
-        entry_4.bind('<KeyPress>', self.input_range_validator)
-        entry_4.bind('<Return>', self.validate_room)
+        entry_4.bind('<KeyPress>', self.validate_room)
+        entry_4.bind('<FocusOut>', self.input_outfocus)
+
 
         entry_5 = tk.Entry(self.labelFrame_3, textvariable=self.ilgrzent)
         entry_5.grid(row=2, column=1, sticky="se")
         entry_5.bind('<KeyPress>', self.input_range_validator)
+        entry_5.bind('<FocusOut>', self.input_outfocus)
 
         entry_6 = tk.Entry(self.labelFrame_3, textvariable=self.ilppodlg)
         entry_6.grid(row=3, column=1, sticky="se")
         entry_6.bind('<KeyPress>', self.input_range_validator)
+        entry_6.bind('<FocusOut>', self.input_outfocus)
 
         entry_7 = tk.Entry(self.labelFrame_3, textvariable=self.ilpscia)
         entry_7.grid(row=4, column=1, sticky="se")
         entry_7.bind('<KeyPress>', self.input_range_validator)
+        entry_7.bind('<FocusOut>', self.input_outfocus)
 
         entry_8 = tk.Entry(self.labelFrame_5, textvariable=self.grofun)
         entry_8.grid(row=0, column=1, sticky="se")
@@ -227,9 +231,6 @@ class StartPage(tk.Frame):
 
         self.type = ("Stare budownictwo", "70-85", "86-92", "93-97", "98-07" , "energooszczedny" , "niskoenegetyczny","pasywny" )
 
-
-
-
         self.var = tk.StringVar(self)
         self.var.set("Stare budownictwo")  # initial value
 
@@ -243,8 +244,20 @@ class StartPage(tk.Frame):
         strefa_opt.grid(row=0,column=1,sticky="we")
 
     def validate_room(self,event):
+        wyn = self.input_range_validator(event)
         print("eNTE")
         print(self.ilgrzenst.get())
+        return  wyn
+
+    def input_outfocus(self,event):
+        entry = event.widget
+        if self.sum_source() > self.ilpom.get():
+            MsgPopup("Walidacja","\n\n\n\tSuma źródeł musi być mniejsza bądź równa jak ilość pomieszczeń\t\n\n\n")
+            entry.focus_set()
+            entry.delete(0,len(entry.get()))
+            entry.insert(0,"0")
+
+
 
     def input_range_validator(self, event):
         if event.char in '0123456789':
@@ -320,8 +333,13 @@ class StartPage(tk.Frame):
 
 
 
+class MsgPopup:
 
-
+    def __init__(self,title,msg):
+        popup = tk.Toplevel()
+        popup.title(title)
+        label = tk.Label(popup,text=msg)
+        label.grid(row=0,column=0)
 
 class ImagePopup:
 
