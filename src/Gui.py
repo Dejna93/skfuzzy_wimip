@@ -4,6 +4,8 @@ import tkinter as tk
 from PIL import Image,ImageTk
 import datetime
 
+from src.FuzzyMain import CalcFuzzy
+
 
 
 thisPath = os.path.abspath(__file__)
@@ -224,8 +226,9 @@ class StartPage(tk.Frame):
         btn_1.grid(row=0,column=2)
 
 
-        btn_2 = tk.Button(self.labelFrame_7, text="Sprawdź")
+        btn_2 = tk.Button(self.labelFrame_7, text="Sprawdź" , command = lambda : self.fun())
         btn_2.grid(row=0,column=0)
+
 
         self.strefa_type = ("Strefa 1", "Strefa 2", "Strefa 3","Strefa 4", "Strefa 5")
 
@@ -328,6 +331,10 @@ class StartPage(tk.Frame):
         if years.index(self.var.get()):
             value = self.rok.get() * yearperwar
 
+
+    def fun(self):
+        fuzzy = CalcFuzzy()
+        fuzzy.viewType()
 
 
 
