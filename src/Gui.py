@@ -19,7 +19,7 @@ class Gui(tk.Tk):
     def __init__(self, *args,**kwargs):
 
         tk.Tk.__init__(self,*args, **kwargs)
-        tk.Tk.wm_title(self,"Sterownik ogrzewania domu")
+        tk.Tk.wm_title(self,"Dobór rodzaju kotła")
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -29,6 +29,7 @@ class Gui(tk.Tk):
         self.menubar = tk.Menu(self)
         self.config(menu=self.menubar)
 
+        self.fuzzy = CalcFuzzy()
 
         self.frames  = {}
 
@@ -52,7 +53,8 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.parent = parent
-        #label frame
+
+        self.fuzzy = CalcFuzzy()        #label frame
         self.labelFrame_1 = tk.LabelFrame(self, text="Techniologia wykonania budynku", height=200,width=340, padx=10, pady=10)
         self.labelFrame_1.grid(row=0, columnspan=8, sticky='NSWE', padx=10, pady=10)
 
@@ -60,7 +62,7 @@ class StartPage(tk.Frame):
         self.labelFrame_2.grid(row=1,sticky="NSWE",padx=10,pady=10)
 
         self.labelFrame_3 = tk.LabelFrame(self,text="Źródło ciepła zastosowane w budynku", height=100, width=340,padx=10,pady=10)
-        self.labelFrame_3.grid(row=2, sticky="NSWE", padx=10, pady=10)
+        #self.labelFrame_3.grid(row=2, sticky="NSWE", padx=10, pady=10)
 
         self.labelFrame_4 = tk.LabelFrame(self, text="Strefa klimatyczna w której znajduje się budynek", height=100, width=340,
                                           padx=10, pady=10)
@@ -227,8 +229,10 @@ class StartPage(tk.Frame):
 
 
         btn_2 = tk.Button(self.labelFrame_7, text="Sprawdź" , command = lambda : self.fun())
-        btn_2.grid(row=0,column=0)
+        #btn_2.grid(row=0,column=0)
 
+        btn_3 = tk.Button(self.labelFrame_7, text="RUN", command = lambda : self.run())
+        btn_3.grid(row=0, column=1)
 
         self.strefa_type = ("Strefa 1", "Strefa 2", "Strefa 3","Strefa 4", "Strefa 5")
 
@@ -246,10 +250,10 @@ class StartPage(tk.Frame):
         strefa_opt = tk.OptionMenu(self.labelFrame_4, self.strefa_var ,*self.strefa_type)
         strefa_opt.grid(row=0,column=1,sticky="we")
 
+
+
     def validate_room(self,event):
         wyn = self.input_range_validator(event)
-        print("eNTE")
-        print(self.ilgrzenst.get())
         return  wyn
 
     def input_outfocus(self,event):
@@ -259,7 +263,6 @@ class StartPage(tk.Frame):
             entry.focus_set()
             entry.delete(0,len(entry.get()))
             entry.insert(0,"0")
-
 
 
     def input_range_validator(self, event):
@@ -288,19 +291,20 @@ class StartPage(tk.Frame):
         procDach = (0 if self.grwel.get() <= 0 else (self.grwel.get() / 30 ) * 100 )
 
         skladany = (procFun + procScian + procDach) / 300
+        print(skladany)
+        self.fuzzy.set_input('Procentowa termoizolacja budynku',skladany)
         # SET insulation.set(skladany)
 
     def check_surface(self):
         powierzchnia = (1 if self.powcieplna.get() <=0 else self.powcieplna.get())
-        powierzchnia ( 200 if self.powcieplna.get() > 200 else self.powcieplna.get())
+        powierzchnia = ( 200 if self.powcieplna.get() > 200 else self.powcieplna.get())
         self.powcieplna.set(powierzchnia)
-
-        # SET surface.set(powierzchnia)
+        self.fuzzy.set_input('Powierzchnia grzewcza',powierzchnia)
 
     def check_zone(self):
-        zone = int(self.strefa_type[-1:])
+        zone = (self.strefa_type.index(self.strefa_var.get()) + 1)
+        #self.fuzzy.set_input('Strefa klimatyczna',zone)
 
-        #SET zone.set(zone)
 
     def check_source(self):
 
@@ -321,20 +325,31 @@ class StartPage(tk.Frame):
     def check_wear(self):
 
         if self.ilosob.get()>=1 and self.ilosob.get() <=8:
-            1
+            self.fuzzy.set_input('Zuzycie wody na osobe',self.ilosob.get() * 50)
             #SET waerWater.set(self.ilosob.get())
 
     def check_building(self):
+        value = 20 + ( 2020 - self.rok.get() -1)  * 5.2
+        self.fuzzy.set_input('Technologia budynku',value)
 
-        yearperwar = 6
-        years = self.type[1:5]
-        if years.index(self.var.get()):
-            value = self.rok.get() * yearperwar
 
 
     def fun(self):
-        fuzzy = CalcFuzzy()
-        fuzzy.viewType()
+
+        self.fuzzy.viewBuildingType()
+
+    def run(self):
+
+        self.check_thermal()
+        self.check_surface()
+        self.check_zone()
+        self.check_wear()
+        self.check_building()
+
+        self.fuzzy.compute()
+
+
+
 
 
 
